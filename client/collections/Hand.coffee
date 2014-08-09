@@ -2,27 +2,29 @@ class window.Hand extends Backbone.Collection
 
   model: Card
 
-  initialize: (array, @deck, @isDealer, @winState='') ->
+  initialize: (array, @deck, @isDealer, @status) ->
 
   getScore: ->
-    @scores()[0]
+    if @scores()[1]? and @scores()[1] <= 21 then @scores()[1] else @scores()[0]
 
-  isScoreSoft: ->
+  hasSoftScore: ->
     # scores are calculated as an Ace equaling 1 but blackjack can have an Ace equal 11. If there is an Ace then the score is soft.
-    @scores.length is 2
+    @getScore() is @scores()[1]
+
+  isBust: ->
+    score = @getScore()
+    true if score > 21
+
+  evalScore: ->
+    @trigger "bust", @ if @isBust()
 
   hit: ->
     @add(@deck.pop()).last()
-    if @getScore() > 21
-      @winState = "Bust"
-      @trigger "bust", @
+    console.log (if @isDealer then "dealer" else "player"), "hits!  Score is a #{if @hasSoftScore() then 'soft' else 'hard'} #{@getScore()}"
+    @evalScore()
 
   stand: ->
     @trigger "stand", @
-
-  wins: ->
-    @winState = "Winner"
-    @trigger "wins", @
 
   scores: ->
     # The scores are an array of potential scores.

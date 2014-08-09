@@ -1,3 +1,9 @@
+body {
+  color: white;
+  background: #002f0d;
+  position: relative
+}
+
 .card {
   float: left;
   border: solid 1px black;
@@ -13,4 +19,16 @@
 
 .hand {
   overflow: auto;
+  height: 300px;
+}
+
+.app {
+  position: relative;
+  left: 30%;
+  width:70%;
+  background: #002f0d;
+}
+
+.covered img {
+  content:url("../img/card-back.png");
 }
