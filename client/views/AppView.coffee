@@ -4,7 +4,7 @@ class window.AppView extends Backbone.View
 
 
   template: _.template '
-    <button class="hit-button">Hit</button> <button class="stand-button">Stand</button>
+    <div class="btns"><button class="hit-button">Hit</button> <button class="stand-button">Stand</button></div>
     <div class="player-hand-container"></div>
     <div class="dealer-hand-container"></div>
     <div class="deck"></div>
@@ -17,9 +17,30 @@ class window.AppView extends Backbone.View
     "click .stand-button": ->
       @model.get('playerHand').stand()
       @render()
+    "click .play-button": ->
+      console.log("playing")
+      @model.nextRound()
+      @render()
 
   initialize: ->
     @render()
+    @model.on "noControl", =>
+      # the only hack I could find to diable the buttons on dealers turn
+      @template = _.template '
+        <div class="btns"><button class="play-button">Play</button></div>
+        <div class="player-hand-container"></div>
+        <div class="dealer-hand-container"></div>
+        <div class="deck"></div>
+      '
+
+    @model.on "control", =>
+      # the only hack I could find to diable the buttons on dealers turn
+      @template = _.template '
+        <div class="btns"><button class="hit-button">Hit</button> <button class="stand-button">Stand</button></div>
+        <div class="player-hand-container"></div>
+        <div class="dealer-hand-container"></div>
+        <div class="deck"></div>
+      '
 
   render: ->
     @$el.children().detach()

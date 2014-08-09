@@ -15,13 +15,21 @@ class window.Hand extends Backbone.Collection
     score = @getScore()
     true if score > 21
 
-  isBlackJack: ->
+  is21: ->
     score = @getScore()
     true if score is 21
 
+  isBlackJack: ->
+    @is21() and @.length is 2
+
   evalScore: ->
     @trigger "bust", @ if @isBust()
-    @trigger "blackjack" @ if @isBlackJack()
+
+    if @isBlackJack()
+      @trigger "blackjack", @
+
+    else if @is21()
+      @trigger "21", @
 
   hit: ->
     @add(@deck.pop()).last()
