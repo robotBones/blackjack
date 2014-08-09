@@ -15,8 +15,13 @@ class window.Hand extends Backbone.Collection
     score = @getScore()
     true if score > 21
 
+  isBlackJack: ->
+    score = @getScore()
+    true if score is 21
+
   evalScore: ->
     @trigger "bust", @ if @isBust()
+    @trigger "blackjack" @ if @isBlackJack()
 
   hit: ->
     @add(@deck.pop()).last()

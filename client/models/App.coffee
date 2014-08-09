@@ -39,6 +39,12 @@ class window.App extends Backbone.Model
 
     # end game instigator 4 of 4
     # someone gets a black jack (10, Ace)
+    @get('playerHand').on 'blackjack', (player)=>
+      console.log "App heard the player blackjacked"
+      @endGame(player, 'blackjack')
+    @get('dealerHand').on 'blackjack', (dealer)=>
+      console.log "App heard the dealer blackjacked"
+      @endGame(dealer, 'blackjack')
 
 
   # end of initialize ->

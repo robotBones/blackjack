@@ -14,5 +14,5 @@ class window.HandView extends Backbone.View
     @$el.html @template @collection
     @$el.append @collection.map (card) ->
       new CardView(model: card).$el
-    @$('.score').text @collection.getScore()
+    @$('.score').text("#{if @collection.hasSoftScore() then 'soft' else 'hard'} "+ @collection.getScore() )
 
