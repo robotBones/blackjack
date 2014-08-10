@@ -63,9 +63,6 @@ class window.App extends Backbone.Model
 
   # game logic
   endGame: (hand, endEvent)->
-    # tell appView to toggle UI buttons
-    @trigger "noControl", @
-
     # empty deck
     deck = @get "deck"
     discardPile = @get "discardPile"
@@ -75,40 +72,69 @@ class window.App extends Backbone.Model
       while discardPile.length != 0
         deck.add discardPile.pop()
       deck.reset(deck.shuffle(), {silent:true});
-    # player busts
-    # player wins with #
-    # player blackjacks
-    # dealer wins with tie
-    @checkWinner()
+
+    # evaluate who won and prepare a message
+    result = @evalRound(hand, endEvent)
+
+    # output results
+    console.log result.message
+
+    # ummm, "noControl" sets removes hit/stand btns and adds a "play button"
+    @trigger "noControl", @
 
     console.log "--------------------------------------"
     console.log ""
     console.log "--------------------------------------"
 
+
   ################## end of endGame #####################
 
-  checkWinner: (hand, endEvent)->
-    player = @get 'playerHand'
+  evalRound: (hand, endEvent)->
+    you = @get 'playerHand'
     dealer = @get 'dealerHand'
 
-    result =
-      winner: null
-      loser: null
+    winner = null
+
+    who = if hand is you then "You" else "The Dealer"
+
+    message: null
 
     # player loses on a tie
-    if player.getScore() is dealer.getScore()
-      result.winner = dealer
-      result.loser = player
-      console.log("tie, player loses")
+    if you.getScore() is dealer.getScore()
+      message = "tie, player loses"
 
-    #
+    # check who won and prep a message
     else
       switch endEvent
-        when "bust" then console.log("bust")
-        when "blackjack" then console.log("blackjack")
-        when "21" then console.log("21");
-        when "dealerStands" then console.log("dealer stands")
+        when "bust"
+          if hand is you
+            winner = you
+          message = "#{who} busted!"
+        when "blackjack"
+          if hand is you
+            winner = you
+            message = "#{who} Won with a BlackJack!"
+          else
+            message = "#{who} Lost! Dealer got a BlackJack."
+        when "21"
+          if hand is you
+            winner = you
+            message = "#{who} are Lucky!"
+          else
+            message = "#{who} ain't cheatin'"
+        when "dealerStands"
+          if you.getScore() > dealer.getScore()
+            winner = you
+            message = "#{who} Won!"
+          else
+            winner = dealer
+            message = "#{who} Won =( Better luck next time"
 
+    result =
+      winner: winner
+      message: message
+
+    return result
 
   ################## end of checkWinner #####################
 
@@ -124,6 +150,11 @@ class window.App extends Backbone.Model
 
     while dealer.length > 0
       discardPile.add(dealer.pop())
+
+    # make sure all cards face the same way in the discard pile
+    # so when resuing the deck it's not all mixed up
+    discardPile.each (card)->
+      card.flip() if card.get('revealed') is false
 
     # dealing cards from the deck collection
     player.add(deck.pop())
@@ -150,8 +181,10 @@ class window.App extends Backbone.Model
 
     #dealer hits on soft 17
     while dealer.hasSoftScore() and dealer.getScore() is 17
-      dealer.hit
+      console.log "dealer hits on soft 17"
+      dealer.hit()
 
     # any hard score 17 and above that doesn't bust or reach 21 calls of a stand()
-    if dealer.getScore() <= 21 and dealer.getScore() > 17
+    if dealer.getScore() <= 21 and dealer.getScore() >= 17 and !dealer.hasSoftScore()
+      console.log "dealer should be standing"
       dealer.stand()
